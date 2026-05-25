@@ -1,0 +1,32 @@
+-- ============================================================
+-- Mameyuflas World Cup — Migraciones de Base de Datos
+-- ============================================================
+-- Este archivo es un placeholder. Las migraciones reales se
+-- crearán en FASE 1 siguiendo el orden definido en:
+--   docs/database-plan.md → "Orden de Migraciones"
+--
+-- Orden previsto:
+--   00_extensions.sql
+--   01_profiles.sql
+--   02_teams.sql
+--   03_matches.sql
+--   04_predictions.sql
+--   05_leagues.sql
+--   06_leaderboard.sql
+--   07_social.sql
+--   08_achievements.sql
+--   09_rls_policies.sql
+--   10_indexes.sql
+--   11_functions.sql
+--   12_seed_teams.sql
+--   13_seed_matches.sql
+--
+-- Para aplicar migraciones:
+--   npx supabase db push
+-- Para reset local:
+--   npx supabase db reset
+-- ============================================================
+
+-- Extensiones básicas (se aplicarán en 00_extensions.sql)
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- CREATE EXTENSION IF NOT EXISTS "pgcrypto";

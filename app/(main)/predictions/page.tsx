@@ -1,0 +1,73 @@
+/**
+ * Página de Predicciones — FASE 2
+ * Server Component: carga datos y pasa al shell cliente.
+ */
+import type { Metadata } from 'next'
+import { redirect }      from 'next/navigation'
+import { createClient }  from '@/lib/supabase/server'
+import { ROUTES }        from '@/lib/constants/routes'
+import { PredictionsClient } from '@/features/predictions'
+import type { CachedTournamentStat, MatchWithTeams } from '@/types/app.types'
+import type { Tables } from '@/types/database.types'
+
+export const metadata: Metadata = { title: 'Predicciones' }
+
+// Revalidar cada 60s para reflejar cambios de estado de partidos
+export const revalidate = 60
+
+export default async function PrediccionesPage() {
+  const supabase = await createClient()
+
+  // Verificar sesión
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect(ROUTES.LOGIN)
+
+  const [
+    { data: matchesRaw },
+    { data: predictions },
+    { data: knockoutPredictions },
+    { data: specialPrediction },
+    { data: tournamentStatsCache },
+    { data: teams },
+  ] = await Promise.all([
+    supabase
+      .from('matches')
+      .select(`
+        *,
+        home_team:teams!matches_home_team_id_fkey ( * ),
+        away_team:teams!matches_away_team_id_fkey ( * )
+      `)
+      .order('match_number'),
+    supabase
+      .from('predictions')
+      .select('*')
+      .eq('user_id', user.id),
+    supabase
+      .from('knockout_predictions')
+      .select('*')
+      .eq('user_id', user.id),
+    supabase
+      .from('special_predictions')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('tournament_stats_cache')
+      .select('key, payload, updated_at'),
+    supabase
+      .from('teams')
+      .select('*')
+      .order('name'),
+  ])
+
+  return (
+    <PredictionsClient
+      matches={(matchesRaw ?? []) as MatchWithTeams[]}
+      predictions={(predictions ?? []) as Tables<'predictions'>[]}
+      knockoutPredictions={(knockoutPredictions ?? []) as Tables<'knockout_predictions'>[]}
+      specialPrediction={specialPrediction ?? null}
+      tournamentStatsCache={(tournamentStatsCache ?? []) as CachedTournamentStat[]}
+      teams={teams ?? []}
+    />
+  )
+}

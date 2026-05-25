@@ -1,0 +1,307 @@
+@import "tailwindcss";
+
+/* ============================================================
+   MWC — Mameyuflas World Cup
+   Ultra-Strike Visual Language — Tailwind v4 CSS-based config
+   Dark neon: pink primary · purple secondary · cyan tertiary
+   ============================================================ */
+
+@theme inline {
+  /* --------------------------------------------------
+     Fuentes
+     -------------------------------------------------- */
+  --font-sans:    var(--font-manrope);
+  --font-heading: var(--font-sora);
+  --font-mono:    var(--font-jetbrains-mono);
+
+  /* --------------------------------------------------
+     Fondos y superficies (tema oscuro)
+     -------------------------------------------------- */
+  --color-mwc-bg:          #0F0F1E;   /* body background — near-black */
+  --color-mwc-surface:     #1A1A2E;   /* cards, paneles */
+  --color-mwc-surface-2:   #16213E;   /* superficie elevada */
+  --color-mwc-surface-3:   #0D3B66;   /* superficie activa / highlighted */
+
+  /* --------------------------------------------------
+     Bordes
+     -------------------------------------------------- */
+  --color-mwc-border:      rgba(255,255,255,0.08);  /* borde sutil */
+  --color-mwc-border-2:    rgba(255,255,255,0.15);  /* borde medio */
+  --color-mwc-border-3:    rgba(255,255,255,0.25);  /* borde fuerte */
+
+  /* --------------------------------------------------
+     Texto
+     -------------------------------------------------- */
+  --color-mwc-text:   #ffffff;
+  --color-mwc-text-2: rgba(255,255,255,0.70);
+  --color-mwc-text-3: rgba(255,255,255,0.40);
+
+  /* --------------------------------------------------
+     Pink — acento primario (CTAs, highlights)
+     -------------------------------------------------- */
+  --color-mwc-pink-700: #c4326a;
+  --color-mwc-pink-600: #e0447f;
+  --color-mwc-pink-500: #FF5E9F;   /* CTA principal */
+  --color-mwc-pink-400: #ff7db3;
+  --color-mwc-pink-300: #ffadd0;
+
+  /* --------------------------------------------------
+     Purple — acento secundario (ranking, badges)
+     -------------------------------------------------- */
+  --color-mwc-purple-700: #6d28d9;
+  --color-mwc-purple-600: #7c3aed;
+  --color-mwc-purple-500: #8B5CF6;   /* secundario */
+  --color-mwc-purple-400: #a78bfa;
+  --color-mwc-purple-300: #c4b5fd;
+
+  /* --------------------------------------------------
+     Cyan — terciario (live, puntuaciones, datos)
+     -------------------------------------------------- */
+  --color-mwc-cyan-500: #00F5FF;   /* live, highlights */
+  --color-mwc-cyan-400: #33f7ff;
+  --color-mwc-cyan-300: #66f9ff;
+
+  /* --------------------------------------------------
+     Estados semánticos
+     -------------------------------------------------- */
+  --color-mwc-red:         #f87171;
+  --color-mwc-red-dark:    #ef4444;
+  --color-mwc-green:       #4ade80;
+  --color-mwc-green-dark:  #22c55e;
+  --color-mwc-gold:        #fbbf24;
+  --color-mwc-gold-dark:   #f59e0b;
+}
+
+/* --------------------------------------------------
+   Variables CSS globales (fuera de @theme)
+   -------------------------------------------------- */
+:root {
+  /* Glows neon */
+  --mwc-glow-pink:   0 0 20px rgba(255, 94, 159, 0.35), 0 0 40px rgba(255, 94, 159, 0.15);
+  --mwc-glow-purple: 0 0 20px rgba(139, 92, 246, 0.35), 0 0 40px rgba(139, 92, 246, 0.15);
+  --mwc-glow-cyan:   0 0 20px rgba(0, 245, 255, 0.35), 0 0 40px rgba(0, 245, 255, 0.15);
+
+  /* Sombras */
+  --mwc-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --mwc-shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+  --mwc-shadow-lg: 0 8px 32px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.4);
+
+  /* Gradientes */
+  --mwc-gradient-primary:  linear-gradient(135deg, #FF5E9F 0%, #8B5CF6 100%);
+  --mwc-gradient-hero:     linear-gradient(160deg, #0F0F1E 0%, #1A1A2E 50%, #16213E 100%);
+  --mwc-gradient-card:     linear-gradient(180deg, #1A1A2E 0%, #0F0F1E 100%);
+  --mwc-gradient-auth:     radial-gradient(ellipse at top, #1A1A2E 0%, #0F0F1E 70%);
+  --mwc-gradient-pink-glow: radial-gradient(ellipse at top right, rgba(255,94,159,0.15) 0%, transparent 60%);
+}
+
+/* --------------------------------------------------
+   Base styles
+   -------------------------------------------------- */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #0F0F1E;
+  color: #ffffff;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+/* --------------------------------------------------
+   Animaciones
+   -------------------------------------------------- */
+@keyframes mwc-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes mwc-pulse-live {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 245, 255, 0.4); }
+  50%       { opacity: 0.8; box-shadow: 0 0 0 4px rgba(0, 245, 255, 0); }
+}
+
+@keyframes mwc-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mwc-glow-pulse {
+  0%, 100% { box-shadow: var(--mwc-glow-pink); }
+  50%       { box-shadow: 0 0 30px rgba(255, 94, 159, 0.5), 0 0 60px rgba(255, 94, 159, 0.2); }
+}
+
+@keyframes mwc-border-spin {
+  to { --angle: 360deg; }
+}
+
+/* --------------------------------------------------
+   Clases de utilidad MWC
+   -------------------------------------------------- */
+.mwc-live-dot {
+  animation: mwc-pulse-live 1.8s ease-in-out infinite;
+}
+
+.mwc-fade-in {
+  animation: mwc-fade-in 200ms ease-out;
+}
+
+.mwc-glow-pink {
+  box-shadow: var(--mwc-glow-pink);
+}
+
+.mwc-glow-purple {
+  box-shadow: var(--mwc-glow-purple);
+}
+
+.mwc-glow-cyan {
+  box-shadow: var(--mwc-glow-cyan);
+}
+
+/* Skeleton para tema oscuro */
+.mwc-skeleton {
+  background: linear-gradient(
+    90deg,
+    #1A1A2E 25%,
+    #252540 50%,
+    #1A1A2E 75%
+  );
+  background-size: 200% 100%;
+  animation: mwc-shimmer 1.5s infinite;
+}
+
+/* Badge de live (cyan pulsante) */
+.mwc-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background-color: rgba(0, 245, 255, 0.15);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  color: #00F5FF;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Gradiente de texto pink→purple */
+.mwc-text-gradient {
+  background: var(--mwc-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card con borde gradiente */
+.mwc-card-gradient-border {
+  position: relative;
+  border-radius: 12px;
+  background: #1A1A2E;
+}
+.mwc-card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,94,159,0.5), rgba(139,92,246,0.3), rgba(0,245,255,0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Dot grid background pattern */
+.mwc-dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* --------------------------------------------------
+   Material Symbols Outlined — base styles
+   -------------------------------------------------- */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* --------------------------------------------------
+   Glass card — Stitch visual language
+   -------------------------------------------------- */
+.glass-card {
+  background: rgba(30, 30, 46, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --------------------------------------------------
+   No-scrollbar utility
+   -------------------------------------------------- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Thin custom scrollbar for desktop */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0F0F1E; }
+::-webkit-scrollbar-thumb { background: #343344; border-radius: 10px; }
+
+/* --------------------------------------------------
+   Prediction score input — Stitch focus glow
+   -------------------------------------------------- */
+.prediction-input:focus {
+  outline: none;
+  box-shadow: 0 0 12px rgba(255, 94, 159, 0.4);
+  border-color: #ffb0c9 !important;
+}
+
+/* --------------------------------------------------
+   Football pitch (Mi 11 Ideal)
+   -------------------------------------------------- */
+.pitch-gradient {
+  background: radial-gradient(circle at center, #1a1a2a 0%, #0d0d1c 100%);
+}
+.pitch-lines {
+  background-image:
+    linear-gradient(to bottom, transparent 49.5%, rgba(255,255,255,0.05) 50%, transparent 50.5%),
+    radial-gradient(circle at center, transparent 20%, rgba(255,255,255,0.05) 21%, transparent 22%);
+  background-size: 100% 100%, 120px 120px;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center;
+}
+
+/* --------------------------------------------------
+   Poll bar (Fan Zone)
+   -------------------------------------------------- */
+.poll-bar {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------
+   Neon border pulse (Leaderboard user bar)
+   -------------------------------------------------- */
+.neon-border-pulse {
+  animation: mwc-neon-border-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes mwc-neon-border-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 94, 159, 0.3), 0 0 15px rgba(255, 94, 159, 0.1); }
+  50%       { box-shadow: 0 0 20px rgba(255, 94, 159, 0.6), 0 0 40px rgba(255, 94, 159, 0.25); }
+}
