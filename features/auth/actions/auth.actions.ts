@@ -197,7 +197,9 @@ export async function forgotPasswordAction(
 // -----------------------------------------------
 export async function signInWithGoogleAction(): Promise<ErrorResult | void> {
   const supabase = await createClient()
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const siteUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

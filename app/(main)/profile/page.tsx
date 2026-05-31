@@ -36,7 +36,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl flex flex-col gap-5 mwc-fade-in">
+    <div className="mx-auto max-w-2xl flex flex-col gap-5 mwc-fade-in pb-28">
 
       {/* Header de perfil */}
       <Card>

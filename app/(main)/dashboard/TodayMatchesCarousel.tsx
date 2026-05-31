@@ -293,8 +293,8 @@ function PopularPredictionsModal({
   onClose: () => void
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#050510]/80 p-3 backdrop-blur-sm md:items-center md:p-6">
-      <div className="glass-card w-full max-w-lg rounded-3xl border border-white/10 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#050510]/80 px-3 pt-3 pb-24 backdrop-blur-sm md:items-center md:p-6">
+      <div className="glass-card w-full max-w-lg rounded-3xl border border-white/10 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)] max-h-[80vh] overflow-y-auto">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">

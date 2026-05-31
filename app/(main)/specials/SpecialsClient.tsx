@@ -410,19 +410,22 @@ export function SpecialsClient({ initialPrediction, teams, players }: Props) {
           {error}
         </p>
       )}
-      {saved && !error && (
-        <p className="mt-6 rounded-xl border border-[#4ade80]/30 bg-[#4ade80]/8 px-4 py-2 text-sm text-[#4ade80]">
-          ✓ Predicciones especiales guardadas
-        </p>
-      )}
 
       {/* Botón bloquear */}
       <div className="mt-8 flex flex-col items-center gap-4">
-        {locked ? (
-          <p className="font-mono text-[12px] font-semibold text-[#ffb4ab] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            Predicciones cerradas
-          </p>
+        {locked || saved ? (
+          <div className="flex flex-col items-center gap-2">
+            <span className="material-symbols-outlined text-[32px] text-[#4ade80]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            <p className="font-mono text-[13px] font-semibold text-[#4ade80] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[14px]">lock</span>
+              {locked ? 'Predicciones cerradas' : 'Predicciones ya guardadas'}
+            </p>
+            {saved && !locked && (
+              <p className="font-mono text-[11px] text-white/40 text-center">
+                No puedes modificarlas una vez guardadas.
+              </p>
+            )}
+          </div>
         ) : (
           <>
             <p className="font-mono text-[11px] text-[#f87171] flex items-center gap-2">

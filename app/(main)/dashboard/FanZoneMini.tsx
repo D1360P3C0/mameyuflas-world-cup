@@ -462,9 +462,13 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
               <div className="flex items-center gap-5 border-t border-white/5 px-4 pb-3 pt-3">
                 <button
                   type="button"
-                  onClick={() => handleReaction(post.id, 'like', post.isPersisted)}
-                  disabled={isPending && post.isPersisted}
-                  className="flex items-center gap-1.5 active:scale-90 transition-transform"
+                  onClick={() => post.isPersisted && handleReaction(post.id, 'like', post.isPersisted)}
+                  disabled={!post.isPersisted || (isPending && post.isPersisted)}
+                  title={!post.isPersisted ? 'Publica algo para poder reaccionar' : undefined}
+                  className={cn(
+                    'flex items-center gap-1.5 transition-transform',
+                    post.isPersisted ? 'active:scale-90' : 'cursor-not-allowed opacity-30',
+                  )}
                 >
                   <span
                     className={cn(
@@ -479,9 +483,13 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleReaction(post.id, 'dislike', post.isPersisted)}
-                  disabled={isPending && post.isPersisted}
-                  className="flex items-center gap-1.5 active:scale-90 transition-transform"
+                  onClick={() => post.isPersisted && handleReaction(post.id, 'dislike', post.isPersisted)}
+                  disabled={!post.isPersisted || (isPending && post.isPersisted)}
+                  title={!post.isPersisted ? 'Publica algo para poder reaccionar' : undefined}
+                  className={cn(
+                    'flex items-center gap-1.5 transition-transform',
+                    post.isPersisted ? 'active:scale-90' : 'cursor-not-allowed opacity-30',
+                  )}
                 >
                   <span
                     className={cn(
@@ -500,31 +508,42 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
                     {post.comments + (localComments[post.id]?.length ?? 0)}
                   </span>
                 </button>
+                {!post.isPersisted && (
+                  <span className="ml-auto font-mono text-[9px] uppercase tracking-widest text-white/20 border border-white/10 rounded px-1.5 py-0.5">
+                    demo
+                  </span>
+                )}
               </div>
 
               <div className="border-t border-white/5 px-4 pb-4 pt-3">
-                <div className="mb-3 flex gap-2">
-                  <input
-                    type="text"
-                    value={commentDrafts[post.id] ?? ''}
-                    onChange={(event) =>
-                      setCommentDrafts((current) => ({ ...current, [post.id]: event.target.value }))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCommentSubmit(post.id, post.isPersisted)
-                    }}
-                    placeholder="Escribe un comentario..."
-                    className="flex-1 rounded-lg border border-white/10 bg-[#1E1E2E] px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#FF5E9F]/40 font-body"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleCommentSubmit(post.id, post.isPersisted)}
-                    disabled={(isPending && post.isPersisted) || !commentDrafts[post.id]?.trim()}
-                    className="rounded-lg bg-[#383848] px-3 py-2 font-mono text-[11px] font-bold text-white transition-opacity disabled:opacity-30"
-                  >
-                    Comentar
-                  </button>
-                </div>
+                {post.isPersisted ? (
+                  <div className="mb-3 flex gap-2">
+                    <input
+                      type="text"
+                      value={commentDrafts[post.id] ?? ''}
+                      onChange={(event) =>
+                        setCommentDrafts((current) => ({ ...current, [post.id]: event.target.value }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCommentSubmit(post.id, post.isPersisted)
+                      }}
+                      placeholder="Escribe un comentario..."
+                      className="flex-1 rounded-lg border border-white/10 bg-[#1E1E2E] px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#FF5E9F]/40 font-body"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleCommentSubmit(post.id, post.isPersisted)}
+                      disabled={isPending || !commentDrafts[post.id]?.trim()}
+                      className="rounded-lg bg-[#383848] px-3 py-2 font-mono text-[11px] font-bold text-white transition-opacity disabled:opacity-30"
+                    >
+                      Comentar
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mb-3 text-center font-mono text-[11px] text-white/30">
+                    Publica algo para ser el primero en comentar
+                  </p>
+                )}
 
                 {([...post.commentList, ...(localComments[post.id] ?? [])]).length > 0 && (
                   <div className="space-y-2">
