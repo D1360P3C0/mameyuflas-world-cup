@@ -8,7 +8,10 @@ import { Flag } from '@/components/ui'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { GoogleAuthButton } from '@/features/auth/components/GoogleAuthButton'
-import { registerAction } from '@/features/auth/actions/auth.actions'
+import {
+  registerAction,
+  saveSurpriseTeamAction,
+} from '@/features/auth/actions/auth.actions'
 import { ROUTES } from '@/lib/constants/routes'
 import { cn } from '@/lib/utils/cn'
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth.schemas'
@@ -86,6 +89,22 @@ const FEATURED_SURPRISE_TEAM_IDS = [
   'CUW',
 ] as const
 
+function RegisterStepBar({ step }: { step: 1 | 2 }) {
+  return (
+    <div className="mb-6 flex items-center gap-2">
+      {[1, 2].map((currentStep) => (
+        <div
+          key={currentStep}
+          className={cn(
+            'h-1 flex-1 rounded-full transition-all duration-300',
+            step >= currentStep ? 'bg-[#FF5E9F]' : 'bg-white/10'
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
 function SurpriseTeamPicker({
   registerData,
   onBack,
@@ -93,7 +112,7 @@ function SurpriseTeamPicker({
 }: {
   registerData: RegisterInput
   onBack: () => void
-  onDone: (result: RegisterResult) => void
+  onDone: (result: RegisterResult, surpriseTeamId: string | null) => Promise<void>
 }) {
   const [selected, setSelected] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -117,7 +136,8 @@ function SurpriseTeamPicker({
       return
     }
 
-    onDone(result)
+    await onDone(result, surpriseTeamId)
+    setSaving(false)
   }
 
   return (
@@ -334,7 +354,6 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -346,14 +365,23 @@ export function RegisterForm() {
     setStep(2)
   })
 
-  const handleSurpriseDone = (result: RegisterResult) => {
+  const handleSurpriseDone = async (
+    result: RegisterResult,
+    surpriseTeamId: string | null
+  ) => {
     if ('error' in result) {
       return
     }
 
+    if (result.surpriseTeamPending && surpriseTeamId && !result.needsEmailConfirmation) {
+      await saveSurpriseTeamAction(surpriseTeamId)
+    }
+
     if (result.needsEmailConfirmation) {
       setSuccessMessage(
-        'Cuenta creada. Revisa tu email y confirma la cuenta antes de iniciar sesion.'
+        result.surpriseTeamPending
+          ? 'Cuenta creada. Revisa tu email y confirma la cuenta antes de iniciar sesion. Si tu Ojito con no aparece luego, podras guardarlo desde tu perfil.'
+          : 'Cuenta creada. Revisa tu email y confirma la cuenta antes de iniciar sesion.'
       )
       setPendingRegisterData(null)
       setStep(1)
@@ -364,23 +392,9 @@ export function RegisterForm() {
     router.refresh()
   }
 
-  const StepBar = () => (
-    <div className="mb-6 flex items-center gap-2">
-      {[1, 2].map((currentStep) => (
-        <div
-          key={currentStep}
-          className={cn(
-            'h-1 flex-1 rounded-full transition-all duration-300',
-            step >= currentStep ? 'bg-[#FF5E9F]' : 'bg-white/10'
-          )}
-        />
-      ))}
-    </div>
-  )
-
   return (
     <>
-      <StepBar />
+      <RegisterStepBar step={step} />
 
       {successMessage && (
         <div className="mb-4 rounded-xl border border-[#4ade80]/30 bg-[#4ade80]/8 px-3 py-2.5 text-sm text-[#4ade80]">

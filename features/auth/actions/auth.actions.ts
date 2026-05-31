@@ -8,8 +8,8 @@
  * tocar Supabase.
  *
  * Patrón de retorno:
- *   - Éxito → { success: true }
- *   - Error  → { error: string }
+ *   - Éxito -> { success: true }
+ *   - Error -> { error: string }
  *
  * La navegación post-éxito la hace el cliente (router.push).
  * Excepción: logoutAction redirige directamente (es un form action).
@@ -27,13 +27,22 @@ import {
 } from '@/lib/validations/auth.schemas'
 
 type SuccessResult = { success: true }
-type ErrorResult   = { error: string }
-type ActionResult  = SuccessResult | ErrorResult
+type ErrorResult = { error: string }
+type ActionResult = SuccessResult | ErrorResult
 type RegisterSuccessResult = {
   success: true
   needsEmailConfirmation: boolean
+  surpriseTeamPending: boolean
 }
 type RegisterActionResult = RegisterSuccessResult | ErrorResult
+
+function isSurpriseTeamSignupError(message: string) {
+  return (
+    message.includes('Database error saving new user') ||
+    message.includes('surprise_team_id') ||
+    message.includes('handle_new_user')
+  )
+}
 
 // -----------------------------------------------
 // Login con email + password
@@ -46,7 +55,7 @@ export async function loginAction(data: LoginInput): Promise<ActionResult> {
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({
-    email:    parsed.data.email,
+    email: parsed.data.email,
     password: parsed.data.password,
   })
 
@@ -82,17 +91,32 @@ export async function registerAction(
   }
 
   const supabase = await createClient()
-  const { data: authData, error } = await supabase.auth.signUp({
-    email:    parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: {
-        username:  parsed.data.username,
-        full_name: parsed.data.displayName,
-        surprise_team_id: surpriseTeamId ?? null,
+  const signUp = (includeSurpriseTeam: boolean) =>
+    supabase.auth.signUp({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        data: {
+          username: parsed.data.username,
+          full_name: parsed.data.displayName,
+          ...(includeSurpriseTeam && surpriseTeamId
+            ? { surprise_team_id: surpriseTeamId }
+            : {}),
+        },
       },
-    },
-  })
+    })
+
+  let { data: authData, error } = await signUp(true)
+  let surpriseTeamPending = false
+
+  // Si el trigger de perfil en producción no acepta todavía surprise_team_id,
+  // no bloqueamos el alta completa: reintentamos sin ese metadata.
+  if (error && surpriseTeamId && isSurpriseTeamSignupError(error.message)) {
+    const fallback = await signUp(false)
+    authData = fallback.data
+    error = fallback.error
+    surpriseTeamPending = !fallback.error
+  }
 
   if (error) {
     if (
@@ -113,12 +137,19 @@ export async function registerAction(
           'Has intentado crear cuentas demasiadas veces en poco tiempo. Espera unos minutos antes de volver a intentarlo.',
       }
     }
+    if (error.message.includes('Database error saving new user')) {
+      return {
+        error:
+          'Error al crear la cuenta en la base de datos. Revisa que las migraciones de Supabase estén aplicadas.',
+      }
+    }
     return { error: 'Error al crear la cuenta. Inténtalo de nuevo.' }
   }
 
   return {
     success: true,
     needsEmailConfirmation: !authData?.session,
+    surpriseTeamPending,
   }
 }
 
@@ -174,7 +205,7 @@ export async function signInWithGoogleAction(): Promise<ErrorResult | void> {
       redirectTo: `${siteUrl}${ROUTES.AUTH_CALLBACK}`,
       queryParams: {
         access_type: 'offline',
-        prompt:      'consent',
+        prompt: 'consent',
       },
     },
   })
@@ -212,9 +243,9 @@ export async function updateProfileAction(formData: {
   const { error } = await supabase
     .from('profiles')
     .update({
-      display_name:  formData.display_name.trim(),
-      bio:           formData.bio?.trim() || null,
-      country_code:  formData.country_code || null,
+      display_name: formData.display_name.trim(),
+      bio: formData.bio?.trim() || null,
+      country_code: formData.country_code || null,
       favorite_team: formData.favorite_team || null,
     })
     .eq('id', user.id)
@@ -230,7 +261,7 @@ export async function updateProfileAction(formData: {
 // Subir foto de perfil a Supabase Storage
 // -----------------------------------------------
 export async function uploadAvatarAction(
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionResult & { avatarUrl?: string }> {
   const supabase = await createClient()
 
@@ -246,14 +277,14 @@ export async function uploadAvatarAction(
   // Max 5 MB
   if (file.size > 5 * 1024 * 1024) return { error: 'La imagen no puede superar 5 MB' }
 
-  const ext    = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-  const path   = `${user.id}/avatar.${ext}`
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+  const path = `${user.id}/avatar.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
     .upload(path, buffer, {
-      upsert:      true,
+      upsert: true,
       contentType: file.type || 'image/jpeg',
     })
 
