@@ -33,10 +33,6 @@ export async function Navbar() {
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-white/10 bg-[#121221]/80 px-4 shadow-[0px_4px_20px_rgba(255,94,159,0.15)] backdrop-blur-md">
       <div className="flex items-center gap-4">
-        <button aria-label="Abrir menu" className="cursor-pointer text-[#ffb0c9] md:hidden">
-          <span className="material-symbols-outlined">menu</span>
-        </button>
-
         <Link href={ROUTES.DASHBOARD}>
           <h1 className="font-heading text-2xl font-semibold italic leading-none tracking-tighter text-[#ffb0c9]">
             WORLD CUP 2026

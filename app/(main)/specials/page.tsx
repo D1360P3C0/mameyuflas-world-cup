@@ -17,7 +17,7 @@ export default async function SpecialsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(ROUTES.LOGIN)
 
-  const [{ data: specialPrediction }, { data: teams }] = await Promise.all([
+  const [{ data: specialPrediction }, { data: teams }, { data: players }] = await Promise.all([
     supabase
       .from('special_predictions')
       .select('*')
@@ -27,12 +27,18 @@ export default async function SpecialsPage() {
       .from('teams')
       .select('*')
       .order('name'),
+    supabase
+      .from('world_squad')
+      .select('id, name, position, team_id')
+      .eq('is_active', true)
+      .order('name'),
   ])
 
   return (
     <SpecialsClient
       initialPrediction={specialPrediction ?? null}
       teams={teams ?? []}
+      players={players ?? []}
     />
   )
 }

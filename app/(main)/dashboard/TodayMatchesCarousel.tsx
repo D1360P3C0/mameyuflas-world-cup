@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -87,6 +87,11 @@ export function TodayMatchesCarousel({
 }: TodayMatchesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [isModalOpen])
 
   const isMockup = matches.length === 0
   const carouselMatches = isMockup ? MOCKUP_MATCHES : matches.map(mapMatchToCarouselMatch)

@@ -18,8 +18,80 @@ import type { Tables } from '@/types/database.types'
 type Team              = Tables<'teams'>
 type SpecialPrediction = Tables<'special_predictions'>
 
-const STAR_PLAYERS = ['K. Mbappé', 'E. Haaland', 'Vini Jr.', 'L. Messi', 'J. Bellingham', 'L. Yamal']
-const STAR_ASSIST_PLAYERS = ['L. Yamal', 'J. Bellingham', 'B. Fernandes', 'Pedri', 'M. Musiala', 'K. De Bruyne']
+interface WorldPlayer {
+  id:       string
+  name:     string
+  position: string
+  team_id:  string
+}
+
+const STAR_PLAYERS = ['Kylian Mbappé', 'Erling Haaland', 'Vinicius Jr', 'Lionel Messi', 'Jude Bellingham', 'Lamine Yamal']
+const STAR_ASSIST_PLAYERS = ['Lamine Yamal', 'Jude Bellingham', 'Bruno Fernandes', 'Pedri', 'Jamal Musiala', 'Kevin De Bruyne']
+
+function PlayerAutocomplete({
+  value,
+  onChange,
+  players,
+  placeholder,
+  disabled,
+  accentColor = '#FF5E9F',
+}: {
+  value:       string
+  onChange:    (v: string) => void
+  players:     WorldPlayer[]
+  placeholder: string
+  disabled:    boolean
+  accentColor?: string
+}) {
+  const [open, setOpen] = useState(false)
+
+  const matches = value.trim().length > 0
+    ? players
+        .filter(p => p.name.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 8)
+    : []
+
+  return (
+    <div className="relative">
+      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">search</span>
+      <input
+        type="text"
+        value={value}
+        onChange={e => { onChange(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        disabled={disabled}
+        placeholder={placeholder}
+        className="w-full bg-[#1E1E2E] border-none rounded-lg py-3 pl-10 pr-4 text-white font-body focus:ring-2 outline-none transition-all placeholder:text-white/30 disabled:opacity-50"
+        style={{ '--tw-ring-color': accentColor } as React.CSSProperties}
+      />
+      {open && matches.length > 0 && (
+        <div className="absolute z-50 left-0 right-0 top-full mt-1 overflow-hidden rounded-lg border border-white/10 bg-[#1A1A2E] shadow-2xl max-h-56 overflow-y-auto">
+          {matches.map(player => (
+            <button
+              key={player.id}
+              type="button"
+              onMouseDown={() => { onChange(player.name); setOpen(false) }}
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/5"
+            >
+              <span className={cn(
+                'shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold',
+                player.position === 'GK'  ? 'bg-[#f59e0b]/20 text-[#f59e0b]'  :
+                player.position === 'DEF' ? 'bg-[#3b82f6]/20 text-[#3b82f6]'  :
+                player.position === 'MID' ? 'bg-[#00dce5]/20 text-[#00dce5]'  :
+                                            'bg-[#FF5E9F]/20 text-[#FF5E9F]',
+              )}>
+                {player.position}
+              </span>
+              <span className="flex-1 truncate text-sm text-white font-body">{player.name}</span>
+              <span className="shrink-0 font-mono text-[10px] text-white/40">{player.team_id}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 const MOCK_TOP_SCORERS = [
   { name: 'K. Mbappé', stat: 5, team: 'FRA' },
   { name: 'E. Haaland', stat: 4, team: 'NOR' },
@@ -36,9 +108,10 @@ const MOCK_TOP_ASSISTS = [
 interface Props {
   initialPrediction: SpecialPrediction | null
   teams:             Team[]
+  players:           WorldPlayer[]
 }
 
-export function SpecialsClient({ initialPrediction, teams }: Props) {
+export function SpecialsClient({ initialPrediction, teams, players }: Props) {
   const locked = areSpecialPredictionsLocked()
 
   const [topScorer,   setTopScorer]   = useState(initialPrediction?.top_scorer         ?? '')
@@ -98,16 +171,14 @@ export function SpecialsClient({ initialPrediction, teams }: Props) {
             </span>
           </h3>
 
-          {/* Search input */}
-          <div className="relative mb-4">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">search</span>
-            <input
-              type="text"
+          <div className="mb-4">
+            <PlayerAutocomplete
               value={topScorer}
-              onChange={e => setTopScorer(e.target.value)}
-              disabled={locked}
+              onChange={setTopScorer}
+              players={players}
               placeholder="Buscar jugador..."
-              className="w-full bg-[#1E1E2E] border-none rounded-lg py-3 pl-10 pr-4 text-white font-body focus:ring-2 focus:ring-[#FF5E9F]/50 outline-none transition-all placeholder:text-white/30 disabled:opacity-50"
+              disabled={locked}
+              accentColor="#FF5E9F"
             />
           </div>
 
@@ -155,15 +226,14 @@ export function SpecialsClient({ initialPrediction, teams }: Props) {
             </span>
           </h3>
 
-          <div className="relative mb-4">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">search</span>
-            <input
-              type="text"
+          <div className="mb-4">
+            <PlayerAutocomplete
               value={topAssist}
-              onChange={e => setTopAssist(e.target.value)}
-              disabled={locked}
+              onChange={setTopAssist}
+              players={players}
               placeholder="Buscar asistente..."
-              className="w-full bg-[#1E1E2E] border-none rounded-lg py-3 pl-10 pr-4 text-white font-body focus:ring-2 focus:ring-[#00dce5]/50 outline-none transition-all placeholder:text-white/30 disabled:opacity-50"
+              disabled={locked}
+              accentColor="#00dce5"
             />
           </div>
 
@@ -204,13 +274,13 @@ export function SpecialsClient({ initialPrediction, teams }: Props) {
           <h3 className="font-heading text-2xl font-semibold text-white mb-2">Guante de Oro</h3>
           <p className="font-body text-white/60 mb-6 text-sm">El portero con más porterías a cero.</p>
 
-          <input
-            type="text"
+          <PlayerAutocomplete
             value={goalkeeper}
-            onChange={e => setGoalkeeper(e.target.value)}
+            onChange={setGoalkeeper}
+            players={players.filter(p => p.position === 'GK')}
+            placeholder="Buscar portero..."
             disabled={locked}
-            placeholder="Nombre del portero..."
-            className="w-full bg-[#292839] rounded-lg p-3 text-white font-body border border-white/5 focus:ring-2 focus:ring-[#00dce5]/40 outline-none transition-all placeholder:text-white/30 text-sm disabled:opacity-50"
+            accentColor="#00dce5"
           />
         </section>
 

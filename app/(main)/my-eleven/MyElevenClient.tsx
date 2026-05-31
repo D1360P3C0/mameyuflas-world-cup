@@ -306,8 +306,8 @@ export function MyElevenClient({
               >
                 {player ? (
                   <>
-                    {/* Banderita del equipo superpuesta */}
-                    <div className="absolute -right-1 -top-1 z-10 h-4 w-4 overflow-hidden rounded-full border border-[#1E1E2E]">
+                    {/* Banderita del equipo */}
+                    <div className="absolute -left-1 -top-1 z-10 h-4 w-4 overflow-hidden rounded-full border border-[#1E1E2E]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`https://flagcdn.com/w20/${player.country_code.toLowerCase()}.png`}

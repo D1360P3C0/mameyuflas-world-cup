@@ -7,6 +7,7 @@
  */
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { uploadAvatarAction } from '@/features/auth/actions/auth.actions'
 
@@ -17,6 +18,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ currentSrc, initials, displayName }: AvatarUploadProps) {
+  const router   = useRouter()
   const fileRef  = useRef<HTMLInputElement>(null)
   const [preview, setPreview]   = useState<string | null>(currentSrc ?? null)
   const [error,   setError]     = useState<string | null>(null)
@@ -44,6 +46,7 @@ export function AvatarUpload({ currentSrc, initials, displayName }: AvatarUpload
       } else if (result.avatarUrl) {
         setPreview(result.avatarUrl)
         setSuccess(true)
+        router.refresh()
       }
     })
   }

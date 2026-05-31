@@ -103,10 +103,11 @@ export function MatchPredictionCard({ match, prediction, onPredictionSaved }: Pr
               <input
                 type="number"
                 min={0}
-                max={9}
+                max={15}
                 value={homeScore}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => {
-                  const v = Math.min(9, Math.max(0, Number(e.target.value) || 0))
+                  const v = Math.min(15, Math.max(0, Number(e.target.value) || 0))
                   setHomeScore(v)
                   if (status === 'saved') setStatus('idle')
                 }}
@@ -121,10 +122,11 @@ export function MatchPredictionCard({ match, prediction, onPredictionSaved }: Pr
               <input
                 type="number"
                 min={0}
-                max={9}
+                max={15}
                 value={awayScore}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => {
-                  const v = Math.min(9, Math.max(0, Number(e.target.value) || 0))
+                  const v = Math.min(15, Math.max(0, Number(e.target.value) || 0))
                   setAwayScore(v)
                   if (status === 'saved') setStatus('idle')
                 }}

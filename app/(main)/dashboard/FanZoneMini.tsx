@@ -500,9 +500,6 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
                     {post.comments + (localComments[post.id]?.length ?? 0)}
                   </span>
                 </button>
-                <button type="button" className="ml-auto text-white/40 transition-colors hover:text-[#ffb0c9]">
-                  <span className="material-symbols-outlined text-[18px]">share</span>
-                </button>
               </div>
 
               <div className="border-t border-white/5 px-4 pb-4 pt-3">
