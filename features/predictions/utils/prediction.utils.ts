@@ -1,8 +1,8 @@
 /**
  * Utilidades para el modulo de predicciones.
+ * Modo clasico: todo se cierra al comenzar el torneo.
  */
 import { STAGE_LABELS } from '@/lib/constants/world-cup'
-import { isPredictionOpen } from '@/lib/utils/dates'
 import type { MatchStage } from '@/types/app.types'
 import type { Tables } from '@/types/database.types'
 
@@ -26,14 +26,18 @@ export type KnockoutOption = {
 
 /** Estan cerradas las predicciones para este partido? */
 export function isPredictionLocked(match: MatchForLockCheck): boolean {
-  return !isPredictionOpen(match.scheduled_at) || match.status !== 'scheduled'
+  return areClassicPredictionsLocked() || match.status !== 'scheduled'
 }
 
-/** Fecha limite para predicciones especiales: 1h antes del partido inaugural */
-const SPECIAL_DEADLINE = new Date('2026-06-11T20:00:00Z')
+/** Inicio oficial del torneo segun el seed actual: 11 Jun 2026, 21:00 UTC. */
+export const TOURNAMENT_START_AT = new Date('2026-06-11T21:00:00Z')
+
+export function areClassicPredictionsLocked(): boolean {
+  return Date.now() >= TOURNAMENT_START_AT.getTime()
+}
 
 export function areSpecialPredictionsLocked(): boolean {
-  return Date.now() >= SPECIAL_DEADLINE.getTime()
+  return areClassicPredictionsLocked()
 }
 
 /**

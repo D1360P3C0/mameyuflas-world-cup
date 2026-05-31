@@ -5,4 +5,9 @@
 export { PredictionsClient }        from './components/PredictionsClient'
 export { upsertPredictionAction }   from './actions/predictions.actions'
 export { upsertSpecialPredictionsAction } from './actions/predictions.actions'
+export {
+  upsertBestThirdPredictionsAction,
+  upsertGroupStandingPredictionAction,
+  upsertKnockoutPredictionAction,
+} from './actions/predictions.actions'
 export { isPredictionLocked, areSpecialPredictionsLocked } from './utils/prediction.utils'

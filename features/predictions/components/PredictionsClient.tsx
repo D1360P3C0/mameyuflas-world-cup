@@ -10,13 +10,16 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils/cn'
 import { GroupPredictions }    from './GroupPredictions'
 import { KnockoutPredictions } from './KnockoutPredictions'
+import { ClassicGroupExtras }  from './ClassicGroupExtras'
 import { SpecialsClient }      from '@/app/(main)/specials/SpecialsClient'
-import { GROUPS, KNOCKOUT_STAGE_ORDER, getKnockoutStageLabel } from '../utils/prediction.utils'
+import { GROUPS, KNOCKOUT_STAGE_ORDER } from '../utils/prediction.utils'
 import type { CachedTournamentStat, MatchWithTeams } from '@/types/app.types'
 import type { Tables }         from '@/types/database.types'
 
 type Prediction         = Tables<'predictions'>
 type KnockoutPrediction = Tables<'knockout_predictions'>
+type GroupStandingPrediction = Tables<'group_standing_predictions'>
+type BestThirdPrediction = Tables<'best_third_predictions'>
 type Team               = Tables<'teams'>
 type SpecialPrediction  = Tables<'special_predictions'>
 type GroupLetter        = (typeof GROUPS)[number]
@@ -41,6 +44,8 @@ interface Props {
   matches:             MatchWithTeams[]
   predictions:         Prediction[]
   knockoutPredictions: KnockoutPrediction[]
+  groupStandingPredictions: GroupStandingPrediction[]
+  bestThirdPredictions: BestThirdPrediction[]
   specialPrediction:   SpecialPrediction | null
   tournamentStatsCache: CachedTournamentStat[]
   teams:               Team[]
@@ -61,20 +66,12 @@ function isCachedStandingRow(value: unknown): value is CachedStandingRow {
   )
 }
 
-/* Labels legibles para cada ronda del bracket */
-const STAGE_LABELS: Record<string, string> = {
-  r32:   'R32',
-  r16:   'Octavos',
-  qf:    'Cuartos',
-  sf:    'Semis',
-  '3rd': '3er P.',
-  final: 'Final',
-}
-
 export function PredictionsClient({
   matches,
   predictions,
   knockoutPredictions,
+  groupStandingPredictions,
+  bestThirdPredictions,
   specialPrediction,
   tournamentStatsCache,
   teams,
@@ -125,6 +122,8 @@ export function PredictionsClient({
   const realStandings = Array.isArray(activeGroupStandingsEntry?.payload)
     ? activeGroupStandingsEntry.payload.filter(isCachedStandingRow)
     : []
+  const activeGroupStandingPrediction =
+    groupStandingPredictions.find((prediction) => prediction.group_letter === groupTab) ?? null
 
   return (
     <div className="relative">
@@ -217,6 +216,14 @@ export function PredictionsClient({
               standingsUpdatedAt={activeGroupStandingsEntry?.updated_at ?? null}
               onPredictionSaved={handlePredictionSaved}
             />
+
+            <ClassicGroupExtras
+              key={`classic-extras-${groupTab}`}
+              group={groupTab}
+              matches={groupMatches}
+              groupStandingPrediction={activeGroupStandingPrediction}
+              bestThirdPredictions={bestThirdPredictions}
+            />
           </>
         )}
 
@@ -268,13 +275,14 @@ export function PredictionsClient({
       {mainView === 'grupos' && (
         <div className="fixed bottom-20 left-0 w-full px-4 z-40 pointer-events-none">
           <div className="bg-gradient-to-t from-[#121221] via-[#121221]/80 to-transparent pb-4 pt-6 pointer-events-auto max-w-lg mx-auto">
-            <button
-              type="button"
-              className="w-full h-14 bg-[#FF5E9F] text-white font-heading text-base font-bold rounded-2xl shadow-[0_4px_25px_rgba(255,94,159,0.5)] active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-[#e0447f]"
-            >
-              <span className="material-symbols-outlined">save</span>
-              Guardar Predicciones
-            </button>
+            <div className="rounded-2xl border border-white/10 bg-[#1E1E2E]/95 px-4 py-3 text-center shadow-[0_10px_40px_rgba(0,0,0,0.35)]">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-white/35">
+                Guardado por bloques
+              </p>
+              <p className="mt-1 text-sm text-white/65">
+                Los partidos, la clasificacion del grupo y las mejores terceras se guardan por separado.
+              </p>
+            </div>
           </div>
         </div>
       )}

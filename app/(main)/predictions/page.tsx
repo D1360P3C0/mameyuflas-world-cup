@@ -26,6 +26,8 @@ export default async function PrediccionesPage() {
     { data: matchesRaw },
     { data: predictions },
     { data: knockoutPredictions },
+    { data: groupStandingPredictions },
+    { data: bestThirdPredictions },
     { data: specialPrediction },
     { data: tournamentStatsCache },
     { data: teams },
@@ -47,6 +49,15 @@ export default async function PrediccionesPage() {
       .from('knockout_predictions')
       .select('*')
       .eq('user_id', user.id),
+    supabase
+      .from('group_standing_predictions')
+      .select('*')
+      .eq('user_id', user.id),
+    supabase
+      .from('best_third_predictions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('ranking_position'),
     supabase
       .from('special_predictions')
       .select('*')
@@ -71,6 +82,8 @@ export default async function PrediccionesPage() {
       matches={(matchesRaw ?? []) as MatchWithTeams[]}
       predictions={(predictions ?? []) as Tables<'predictions'>[]}
       knockoutPredictions={(knockoutPredictions ?? []) as Tables<'knockout_predictions'>[]}
+      groupStandingPredictions={(groupStandingPredictions ?? []) as Tables<'group_standing_predictions'>[]}
+      bestThirdPredictions={(bestThirdPredictions ?? []) as Tables<'best_third_predictions'>[]}
       specialPrediction={specialPrediction ?? null}
       tournamentStatsCache={(tournamentStatsCache ?? []) as CachedTournamentStat[]}
       teams={teams ?? []}

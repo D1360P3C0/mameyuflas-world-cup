@@ -5,6 +5,7 @@
  */
 import Link from 'next/link'
 import { ROUTES } from '@/lib/constants/routes'
+import { HomeRulesDialog } from './HomeRulesDialog'
 
 export default function HomePage() {
   return (
@@ -62,6 +63,7 @@ export default function HomePage() {
           >
             Ya tengo cuenta
           </Link>
+          <HomeRulesDialog />
         </div>
 
         {/* Features grid */}

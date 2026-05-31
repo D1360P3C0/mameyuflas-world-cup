@@ -11,6 +11,8 @@ export type Profile = Tables<'profiles'>
 export type Team = Tables<'teams'>
 export type Match = Tables<'matches'>
 export type KnockoutPrediction = Tables<'knockout_predictions'>
+export type GroupStandingPrediction = Tables<'group_standing_predictions'>
+export type BestThirdPrediction = Tables<'best_third_predictions'>
 
 // -----------------------------------------------
 // Tipos enriquecidos para la UI
@@ -33,13 +35,18 @@ export type MatchStage = 'group' | 'r32' | 'r16' | 'qf' | 'sf' | '3rd' | 'final'
 /** Tipos de predicción */
 export type PredictionType =
   | 'match_result'
+  | 'group_standings'
+  | 'best_thirds'
   | 'champion'
   | 'runner_up'
+  | 'revelation_team'
   | 'top_scorer'
   | 'top_assist'
   | 'best_player'
   | 'best_keeper'
   | 'best_young'
+  | 'most_goals_in_groups'
+  | 'fewest_goals_against_in_groups'
   | 'group_position'
   | 'semifinalist'
   | 'quarterfinalist'

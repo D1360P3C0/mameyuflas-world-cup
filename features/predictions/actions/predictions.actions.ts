@@ -10,6 +10,8 @@
  */
 import { createClient } from '@/lib/supabase/server'
 import {
+  bestThirdPredictionSchema,
+  groupStandingPredictionSchema,
   knockoutPredictionSchema,
   matchPredictionSchema,
 } from '@/lib/validations/prediction.schemas'
@@ -74,11 +76,14 @@ export async function upsertPredictionAction(
 export async function upsertSpecialPredictionsAction(data: {
   champion_team_id?:  string | null
   runner_up_team_id?: string | null
+  revelation_team_id?: string | null
   top_scorer?:        string | null
   top_assist_player?: string | null
   mvp?:               string | null
   best_goalkeeper?:   string | null
   best_young_player?: string | null
+  most_goals_in_groups_team_id?: string | null
+  fewest_goals_against_in_groups_team_id?: string | null
 }): Promise<ActionResult> {
   if (areSpecialPredictionsLocked()) {
     return { error: 'Las predicciones especiales están cerradas' }
@@ -105,10 +110,14 @@ export async function upsertSpecialPredictionsAction(data: {
 export async function upsertKnockoutPredictionAction(
   matchId: string,
   winnerTeamId: string,
+  homeGoalsAfter120?: number | null,
+  awayGoalsAfter120?: number | null,
 ): Promise<ActionResult> {
   const parsed = knockoutPredictionSchema.safeParse({
     matchId,
     winnerTeamId,
+    homeGoalsAfter120,
+    awayGoalsAfter120,
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Datos invalidos' }
@@ -145,6 +154,8 @@ export async function upsertKnockoutPredictionAction(
         user_id: user.id,
         match_id: matchId,
         winner_team_id: winnerTeamId,
+        home_score_after_120: homeGoalsAfter120 ?? null,
+        away_score_after_120: awayGoalsAfter120 ?? null,
       },
       { onConflict: 'user_id,match_id' },
     )
@@ -172,5 +183,80 @@ export async function clearKnockoutPredictionAction(
     .eq('match_id', matchId)
 
   if (error) return { error: 'No se pudo limpiar el pick del bracket' }
+  return { success: true }
+}
+
+export async function upsertGroupStandingPredictionAction(
+  groupLetter: string,
+  orderedTeamIds: string[],
+): Promise<ActionResult> {
+  const parsed = groupStandingPredictionSchema.safeParse({
+    groupLetter,
+    orderedTeamIds,
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Datos invalidos' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No estas autenticado' }
+  if (areSpecialPredictionsLocked()) {
+    return { error: 'Las predicciones clasicas estan cerradas' }
+  }
+
+  const [firstTeamId, secondTeamId, thirdTeamId, fourthTeamId] = parsed.data.orderedTeamIds
+
+  const { error } = await supabase
+    .from('group_standing_predictions')
+    .upsert(
+      {
+        user_id: user.id,
+        group_letter: parsed.data.groupLetter,
+        first_team_id: firstTeamId,
+        second_team_id: secondTeamId,
+        third_team_id: thirdTeamId,
+        fourth_team_id: fourthTeamId,
+      },
+      { onConflict: 'user_id,group_letter' },
+    )
+
+  if (error) return { error: 'Error al guardar la clasificacion del grupo' }
+  return { success: true }
+}
+
+export async function upsertBestThirdPredictionsAction(
+  orderedTeamIds: string[],
+): Promise<ActionResult> {
+  const parsed = bestThirdPredictionSchema.safeParse({ orderedTeamIds })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Datos invalidos' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No estas autenticado' }
+  if (areSpecialPredictionsLocked()) {
+    return { error: 'Las predicciones clasicas estan cerradas' }
+  }
+
+  const { error: deleteError } = await supabase
+    .from('best_third_predictions')
+    .delete()
+    .eq('user_id', user.id)
+
+  if (deleteError) return { error: 'Error al actualizar el ranking de terceras' }
+
+  const rows = parsed.data.orderedTeamIds.map((teamId, index) => ({
+    user_id: user.id,
+    ranking_position: index + 1,
+    team_id: teamId,
+  }))
+
+  const { error: insertError } = await supabase
+    .from('best_third_predictions')
+    .insert(rows)
+
+  if (insertError) return { error: 'Error al guardar el ranking de terceras' }
   return { success: true }
 }

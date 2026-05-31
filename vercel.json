@@ -1,0 +1,13 @@
+{
+  "crons": [
+    { "path": "/api/cron/sync-matches", "schedule": "50 18 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "45 19 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "50 21 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "50 22 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "45 23 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "50 0 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "50 1 * * *" },
+    { "path": "/api/cron/sync-matches", "schedule": "45 2 * * *" },
+    { "path": "/api/cron/sync-daily-stats", "schedule": "0 3 * * *" }
+  ]
+}

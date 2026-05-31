@@ -24,6 +24,7 @@ export default async function AdminMatchesPage() {
       home_score,
       away_score,
       venue,
+      external_fixture_id,
       home_team:teams!matches_home_team_id_fkey ( id, name ),
       away_team:teams!matches_away_team_id_fkey ( id, name )
     `)

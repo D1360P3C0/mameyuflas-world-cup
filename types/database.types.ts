@@ -135,6 +135,44 @@ export type Database = {
           },
         ]
       }
+      best_third_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          points_earned: number | null
+          ranking_position: number
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          ranking_position: number
+          team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          ranking_position?: number
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_third_predictions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fan_post_reactions: {
         Row: {
           created_at: string
@@ -212,6 +250,8 @@ export type Database = {
       knockout_predictions: {
         Row: {
           created_at: string
+          away_score_after_120: number | null
+          home_score_after_120: number | null
           id: string
           match_id: string
           points_earned: number | null
@@ -220,7 +260,9 @@ export type Database = {
           winner_team_id: string
         }
         Insert: {
+          away_score_after_120?: number | null
           created_at?: string
+          home_score_after_120?: number | null
           id?: string
           match_id: string
           points_earned?: number | null
@@ -229,7 +271,9 @@ export type Database = {
           winner_team_id: string
         }
         Update: {
+          away_score_after_120?: number | null
           created_at?: string
+          home_score_after_120?: number | null
           id?: string
           match_id?: string
           points_earned?: number | null
@@ -248,6 +292,74 @@ export type Database = {
           {
             foreignKeyName: "knockout_predictions_winner_team_id_fkey"
             columns: ["winner_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_standing_predictions: {
+        Row: {
+          created_at: string
+          first_team_id: string
+          fourth_team_id: string
+          group_letter: string
+          id: string
+          points_earned: number | null
+          second_team_id: string
+          third_team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_team_id: string
+          fourth_team_id: string
+          group_letter: string
+          id?: string
+          points_earned?: number | null
+          second_team_id: string
+          third_team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_team_id?: string
+          fourth_team_id?: string
+          group_letter?: string
+          id?: string
+          points_earned?: number | null
+          second_team_id?: string
+          third_team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_standing_predictions_first_team_id_fkey"
+            columns: ["first_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_standing_predictions_fourth_team_id_fkey"
+            columns: ["fourth_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_standing_predictions_second_team_id_fkey"
+            columns: ["second_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_standing_predictions_third_team_id_fkey"
+            columns: ["third_team_id"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
@@ -540,9 +652,12 @@ export type Database = {
           best_young_player: string | null
           champion_team_id: string | null
           created_at: string
+          fewest_goals_against_in_groups_team_id: string | null
           id: string
+          most_goals_in_groups_team_id: string | null
           mvp: string | null
           points_earned: number | null
+          revelation_team_id: string | null
           runner_up_team_id: string | null
           top_assist_player: string | null
           top_scorer: string | null
@@ -554,9 +669,12 @@ export type Database = {
           best_young_player?: string | null
           champion_team_id?: string | null
           created_at?: string
+          fewest_goals_against_in_groups_team_id?: string | null
           id?: string
+          most_goals_in_groups_team_id?: string | null
           mvp?: string | null
           points_earned?: number | null
+          revelation_team_id?: string | null
           runner_up_team_id?: string | null
           top_assist_player?: string | null
           top_scorer?: string | null
@@ -568,9 +686,12 @@ export type Database = {
           best_young_player?: string | null
           champion_team_id?: string | null
           created_at?: string
+          fewest_goals_against_in_groups_team_id?: string | null
           id?: string
+          most_goals_in_groups_team_id?: string | null
           mvp?: string | null
           points_earned?: number | null
+          revelation_team_id?: string | null
           runner_up_team_id?: string | null
           top_assist_player?: string | null
           top_scorer?: string | null
@@ -581,6 +702,27 @@ export type Database = {
           {
             foreignKeyName: "special_predictions_champion_team_id_fkey"
             columns: ["champion_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_predictions_fewest_goals_against_in_groups_team_id_fkey"
+            columns: ["fewest_goals_against_in_groups_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_predictions_most_goals_in_groups_team_id_fkey"
+            columns: ["most_goals_in_groups_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_predictions_revelation_team_id_fkey"
+            columns: ["revelation_team_id"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]

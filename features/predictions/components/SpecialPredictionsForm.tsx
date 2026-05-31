@@ -3,7 +3,7 @@
 /**
  * Formulario de predicciones especiales del torneo — Ultra-Strike Design.
  * Campeón, subcampeón, goleador, MVP, portero y joven.
- * Se bloquea 1 hora antes del partido inaugural (11 Jun 2026 21:00 UTC).
+ * Modo clasico: se bloquea al inicio del torneo (11 Jun 2026 21:00 UTC).
  */
 import { useState } from 'react'
 import { upsertSpecialPredictionsAction } from '../actions/predictions.actions'

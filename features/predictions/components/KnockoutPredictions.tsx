@@ -36,15 +36,35 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
   )
 
   const [winnerByMatchId, setWinnerByMatchId] = useState<Record<string, string>>(
+    () => Object.fromEntries(predictions.map((prediction) => [prediction.match_id, prediction.winner_team_id]))
+  )
+  const [scoreAfter120ByMatchId, setScoreAfter120ByMatchId] = useState<
+    Record<string, { home: string; away: string }>
+  >(
     () =>
       Object.fromEntries(
-        predictions.map((prediction) => [prediction.match_id, prediction.winner_team_id])
+        predictions.map((prediction) => [
+          prediction.match_id,
+          {
+            home:
+              prediction.home_score_after_120 !== null
+                ? String(prediction.home_score_after_120)
+                : '',
+            away:
+              prediction.away_score_after_120 !== null
+                ? String(prediction.away_score_after_120)
+                : '',
+          },
+        ])
       )
   )
   const [statusByMatchId, setStatusByMatchId] = useState<Record<string, SaveStatus>>(
     () =>
       Object.fromEntries(
-        sortedMatches.map((match) => [match.id, predictions.some((item) => item.match_id === match.id) ? 'saved' : 'idle'])
+        sortedMatches.map((match) => [
+          match.id,
+          predictions.some((item) => item.match_id === match.id) ? 'saved' : 'idle',
+        ])
       )
   )
 
@@ -58,9 +78,34 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
     }
   }, [])
 
-  const predictionByMatchNumber = useMemo(() => {
-    return buildPredictionByMatchNumber(sortedMatches, winnerByMatchId)
-  }, [sortedMatches, winnerByMatchId])
+  const predictionByMatchNumber = useMemo(
+    () => buildPredictionByMatchNumber(sortedMatches, winnerByMatchId),
+    [sortedMatches, winnerByMatchId]
+  )
+
+  const queueSave = (
+    matchId: string,
+    winnerTeamId: string,
+    scoreAfter120 = scoreAfter120ByMatchId[matchId]
+  ) => {
+    cancelScheduledSave(matchId)
+    timersRef.current.set(
+      matchId,
+      setTimeout(async () => {
+        setStatusByMatchId((current) => ({ ...current, [matchId]: 'saving' }))
+        const result = await upsertKnockoutPredictionAction(
+          matchId,
+          winnerTeamId,
+          parseNullableScore(scoreAfter120?.home),
+          parseNullableScore(scoreAfter120?.away)
+        )
+        setStatusByMatchId((current) => ({
+          ...current,
+          [matchId]: 'success' in result ? 'saved' : 'error',
+        }))
+      }, 800)
+    )
+  }
 
   const handlePickChange = (matchId: string, winnerTeamId: string) => {
     const nextState = { ...winnerByMatchId, [matchId]: winnerTeamId }
@@ -84,6 +129,28 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
     })
   }
 
+  const handleScoreAfter120Change = (
+    matchId: string,
+    side: 'home' | 'away',
+    value: string
+  ) => {
+    const nextScore = {
+      home: side === 'home' ? value : scoreAfter120ByMatchId[matchId]?.home ?? '',
+      away: side === 'away' ? value : scoreAfter120ByMatchId[matchId]?.away ?? '',
+    }
+
+    setScoreAfter120ByMatchId((current) => ({
+      ...current,
+      [matchId]: nextScore,
+    }))
+    setStatusByMatchId((current) => ({ ...current, [matchId]: 'idle' }))
+
+    const winnerTeamId = winnerByMatchId[matchId]
+    if (winnerTeamId) {
+      queueSave(matchId, winnerTeamId, nextScore)
+    }
+  }
+
   const handleClear = (matchId: string) => {
     const nextState = { ...winnerByMatchId }
     delete nextState[matchId]
@@ -96,6 +163,13 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
     const allCleared = [matchId, ...clearedMatchIds]
 
     setWinnerByMatchId(record)
+    setScoreAfter120ByMatchId((current) => {
+      const next = { ...current }
+      allCleared.forEach((clearedMatchId) => {
+        delete next[clearedMatchId]
+      })
+      return next
+    })
     setStatusByMatchId((current) => ({
       ...current,
       ...Object.fromEntries(allCleared.map((id) => [id, 'idle' as const])),
@@ -105,21 +179,6 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
       cancelScheduledSave(clearedMatchId)
       void clearKnockoutPredictionAction(clearedMatchId)
     })
-  }
-
-  const queueSave = (matchId: string, winnerTeamId: string) => {
-    cancelScheduledSave(matchId)
-    timersRef.current.set(
-      matchId,
-      setTimeout(async () => {
-        setStatusByMatchId((current) => ({ ...current, [matchId]: 'saving' }))
-        const result = await upsertKnockoutPredictionAction(matchId, winnerTeamId)
-        setStatusByMatchId((current) => ({
-          ...current,
-          [matchId]: 'success' in result ? 'saved' : 'error',
-        }))
-      }, 800)
-    )
   }
 
   const cancelScheduledSave = (matchId: string) => {
@@ -147,7 +206,7 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
           Bracket de Eliminatorias
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-white/50">
-          Elige el ganador de cada cruce. Las rondas siguientes se alimentan automaticamente con tus picks anteriores.
+          Elige el ganador de cada cruce y el marcador tras 120 minutos para rascar el maximo de cada ronda.
         </p>
       </div>
 
@@ -176,6 +235,7 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
                 const selectedWinnerId = winnerByMatchId[match.id] ?? ''
                 const selectedWinner = teams.find((team) => team.id === selectedWinnerId)
                 const locked = isPredictionLocked(match)
+                const scoreAfter120 = scoreAfter120ByMatchId[match.id] ?? { home: '', away: '' }
 
                 return (
                   <article
@@ -223,6 +283,38 @@ export function KnockoutPredictions({ matches, predictions, teams }: Props) {
                         </option>
                       ))}
                     </select>
+
+                    <div className="mt-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-white/40">
+                        Marcador tras 120 minutos
+                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          max={20}
+                          value={scoreAfter120.home}
+                          disabled={locked}
+                          onChange={(event) =>
+                            handleScoreAfter120Change(match.id, 'home', event.target.value)
+                          }
+                          placeholder="Local"
+                          className="w-full rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-sm text-white outline-none transition-all focus:border-[#8B5CF6]/60 focus:ring-2 focus:ring-[#8B5CF6]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          max={20}
+                          value={scoreAfter120.away}
+                          disabled={locked}
+                          onChange={(event) =>
+                            handleScoreAfter120Change(match.id, 'away', event.target.value)
+                          }
+                          placeholder="Visitante"
+                          className="w-full rounded-xl border border-white/10 bg-white/6 px-3 py-2.5 text-sm text-white outline-none transition-all focus:border-[#8B5CF6]/60 focus:ring-2 focus:ring-[#8B5CF6]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
 
                     {selectedWinnerId && (
                       <div className="mt-3 rounded-xl bg-white/5 border border-white/6 px-3 py-2">
@@ -339,4 +431,10 @@ function StatusText({
   if (status === 'error') return <span className="text-[#f87171]">Error al guardar</span>
   if (!hasPrediction) return <span className="text-white/20">Sin pick</span>
   return <span className="text-white/35">Pendiente de guardado</span>
+}
+
+function parseNullableScore(value: string | undefined): number | null {
+  if (!value || value.trim() === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
 }

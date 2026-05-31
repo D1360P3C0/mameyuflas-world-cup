@@ -1,75 +1,147 @@
-# Mameyuflas World Cup ⚽🏆
+# Mameyuflas World Cup
 
-> Porra avanzada del Mundial 2026 — predicciones, rankings, ligas privadas y Match Center en tiempo real.
+Advanced FIFA World Cup 2026 prediction app with match picks, group standings, knockout brackets, special awards, private leagues, live sync, and real-time rankings.
 
-## Stack
+## Overview
 
-| Capa | Tecnología |
+Mameyuflas World Cup is a social prediction platform built around the 2026 World Cup format.
+Users can:
+
+- predict every group-stage score
+- rank final group standings
+- rank the best third-placed teams
+- complete the full knockout bracket
+- pick tournament specials such as champion, MVP, top scorer, and more
+- compete in private leagues and live leaderboards
+
+## Tech Stack
+
+| Layer | Technology |
 |---|---|
-| Framework | Next.js 15 (App Router) |
-| Backend/DB | Supabase (Auth, PostgreSQL, Realtime, Storage, RLS) |
-| Estado | TanStack Query v5 + Zustand v5 |
-| Validación | Zod v4 |
-| Estilos | Tailwind CSS v4 |
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| Backend / DB | Supabase (Auth, Postgres, Storage, RLS) |
+| State | TanStack Query v5 + Zustand v5 |
+| Validation | Zod v4 |
+| Styling | Tailwind CSS v4 |
 | Deployment | Vercel |
 
-## Requisitos
+## Main Features
+
+- Classic prediction mode with full tournament lock at kickoff
+- Group-stage scoring rules and knockout scoring engine
+- Group standings and best-third predictions
+- Knockout bracket with winner and after-120-minute score inputs
+- Tournament special picks
+- Admin match management
+- External match/stat syncing through scheduled cron routes
+
+## Local Setup
+
+Requirements:
 
 - Node.js 20+
 - npm 10+
-- Cuenta de [Supabase](https://supabase.com)
+- Supabase project
+- Vercel account for production deploys
 
-## Setup Local
+### 1. Install dependencies
 
 ```bash
-# 1. Instalar dependencias
 npm install
+```
 
-# 2. Configurar variables de entorno
+### 2. Configure environment variables
+
+```bash
 cp .env.example .env.local
-# Editar .env.local con tus credenciales de Supabase
+```
 
-# 3. Iniciar servidor de desarrollo
+Fill in the required values in `.env.local`.
+
+Key variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_PROJECT_ID`
+- `API_FOOTBALL_KEY`
+- `CRON_SECRET`
+
+### 3. Run the app
+
+```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000`.
 
-## Scripts
+## Available Scripts
 
-| Comando | Descripción |
+| Command | Description |
 |---|---|
-| `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Build de producción |
-| `npm run type-check` | Verificación de tipos TypeScript |
-| `npm run lint` | Linting con ESLint |
-| `npm run supabase:types` | Generar tipos desde Supabase |
+| `npm run dev` | Start local development server |
+| `npm run build` | Production build |
+| `npm run type-check` | Run TypeScript checks |
+| `npm run lint` | Run ESLint |
+| `npm run supabase:types` | Regenerate Supabase TypeScript types |
 
-## Estructura
+## Database and Migrations
 
-Ver [docs/architecture.md](docs/architecture.md) para la documentación completa.
+Supabase migrations live in [supabase/migrations](supabase/migrations).
 
-## Fases de Desarrollo
+Recent prediction-related additions include:
 
-| Fase | Descripción | Estado |
-|---|---|---|
-| FASE 0 | Setup y estructura base | ✅ Completada |
-| FASE 1 | Autenticación y layout | ⏳ Pendiente |
-| FASE 2 | Predicciones | ⏳ Pendiente |
-| FASE 3 | Match Center | ⏳ Pendiente |
-| FASE 4 | Ligas y Leaderboard | ⏳ Pendiente |
-| FASE 5 | Social y Gamificación | ⏳ Pendiente |
-| FASE 6 | Noticias y Automatización | ⏳ Pendiente |
-| FASE 7 | Polish y Producción | ⏳ Pendiente |
+- group standing predictions
+- best third-team predictions
+- extended tournament specials
+- knockout after-120-minute score fields
 
-## Documentación
+## Match and Stats Sync
 
+The project includes Vercel cron routes for external data sync:
+
+- `/api/cron/sync-matches`
+- `/api/cron/sync-daily-stats`
+
+These routes use:
+
+- `API_FOOTBALL_KEY`
+- `CRON_SECRET`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+## Scoring
+
+The scoring rules are configured in:
+
+- [lib/constants/scoring.ts](lib/constants/scoring.ts)
+
+The scoring engine lives in:
+
+- [lib/utils/scoring.ts](lib/utils/scoring.ts)
+
+Note:
+The rules engine is implemented, but if you want full automatic point settlement after real results arrive, make sure the backend settlement flow is wired to update `points_earned` across prediction tables.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
 - [Product Brief](docs/product-brief.md)
-- [Arquitectura](docs/architecture.md)
 - [UI Direction](docs/ui-direction.md)
-- [Plan de Base de Datos](docs/database-plan.md)
-- [Guía del Agente](CLAUDE.md)
+- [Database Plan](docs/database-plan.md)
+- [Agent Guide](CLAUDE.md)
 
----
+## Production
 
-*Proyecto privado. Todos los derechos reservados.*
+The app is deployed on Vercel and uses Supabase as the production database.
+
+Production deploys can require:
+
+- valid `vercel.json` cron configuration
+- linked Vercel project
+- linked Supabase project
+- remote database password for `supabase db push`
+
+## License
+
+Private project. All rights reserved.
