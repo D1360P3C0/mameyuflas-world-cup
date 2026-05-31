@@ -160,6 +160,7 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null)
   const [composerError, setComposerError] = useState<string | null>(null)
+  const [postErrors, setPostErrors] = useState<Record<string, string | null>>({})
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const posts = useMemo(() => {
@@ -269,10 +270,11 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
       return
     }
     setComposerError(null)
+    setPostErrors((current) => ({ ...current, [postId]: null }))
     startTransition(async () => {
       const result = await toggleFanReactionAction(postId, reactionType)
       if ('error' in result) {
-        setComposerError(result.error)
+        setPostErrors((current) => ({ ...current, [postId]: result.error }))
         return
       }
       setReactionOverrides((current) => ({
@@ -300,11 +302,11 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
       return
     }
 
-    setComposerError(null)
+    setPostErrors((current) => ({ ...current, [postId]: null }))
     startTransition(async () => {
       const result = await createFanCommentAction(postId, draft)
       if ('error' in result) {
-        setComposerError(result.error)
+        setPostErrors((current) => ({ ...current, [postId]: result.error }))
         return
       }
       setCommentDrafts((current) => ({ ...current, [postId]: '' }))
@@ -514,6 +516,14 @@ export function FanZoneMini({ fanPosts = [], publishedLineups = [] }: FanZoneMin
                   </span>
                 )}
               </div>
+
+              {postErrors[post.id] && (
+                <div className="px-4 pb-1">
+                  <p className="rounded-lg border border-[#f87171]/30 bg-[#f87171]/8 px-3 py-1.5 font-mono text-[11px] text-[#fca5a5]">
+                    {postErrors[post.id]}
+                  </p>
+                </div>
+              )}
 
               <div className="border-t border-white/5 px-4 pb-4 pt-3">
                 {post.isPersisted ? (

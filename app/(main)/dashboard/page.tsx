@@ -16,7 +16,7 @@ import type { MatchWithTeams } from '@/types/app.types'
 import type { Json, Tables } from '@/types/database.types'
 
 export const metadata: Metadata = { title: 'Inicio' }
-export const revalidate = 60
+export const revalidate = 0
 
 const MOCK_NEWS = [
   {
