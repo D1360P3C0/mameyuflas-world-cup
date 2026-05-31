@@ -30,6 +30,13 @@ type CachedStandingRow = {
   points: number
 }
 
+interface WorldPlayer {
+  id: string
+  name: string
+  position: string
+  team_id: string
+}
+
 interface Props {
   matches:             MatchWithTeams[]
   predictions:         Prediction[]
@@ -37,6 +44,7 @@ interface Props {
   specialPrediction:   SpecialPrediction | null
   tournamentStatsCache: CachedTournamentStat[]
   teams:               Team[]
+  players:             WorldPlayer[]
 }
 
 function isCachedStandingRow(value: unknown): value is CachedStandingRow {
@@ -70,6 +78,7 @@ export function PredictionsClient({
   specialPrediction,
   tournamentStatsCache,
   teams,
+  players,
 }: Props) {
   const [mainView,  setMainView]  = useState<MainView>('grupos')
   const [groupTab,  setGroupTab]  = useState<GroupLetter>('A')
@@ -249,6 +258,7 @@ export function PredictionsClient({
           <SpecialsClient
             initialPrediction={specialPrediction}
             teams={teams}
+            players={players}
           />
         )}
 

@@ -29,6 +29,7 @@ export default async function PrediccionesPage() {
     { data: specialPrediction },
     { data: tournamentStatsCache },
     { data: teams },
+    { data: players },
   ] = await Promise.all([
     supabase
       .from('matches')
@@ -58,6 +59,11 @@ export default async function PrediccionesPage() {
       .from('teams')
       .select('*')
       .order('name'),
+    supabase
+      .from('world_squad')
+      .select('id, name, position, team_id')
+      .eq('is_active', true)
+      .order('name'),
   ])
 
   return (
@@ -68,6 +74,7 @@ export default async function PrediccionesPage() {
       specialPrediction={specialPrediction ?? null}
       tournamentStatsCache={(tournamentStatsCache ?? []) as CachedTournamentStat[]}
       teams={teams ?? []}
+      players={players ?? []}
     />
   )
 }
